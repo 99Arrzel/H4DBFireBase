@@ -1,58 +1,58 @@
 package com.example.h4_dbfirebase
 
-class Usuario ***REMOVED***
+class Usuario {
     private var uid: String? = null
     private var nombres: String? = null
     private var apellidos: String? = null
     private var email: String? = null
     private var telefono: String? = null
     //constructor
-    fun Usuario() ***REMOVED******REMOVED***
+    fun Usuario() {}
 
-    fun getUid(): String? ***REMOVED***
+    fun getUid(): String? {
         return uid
-***REMOVED***
+    }
 
-    fun setUid(uid: String) ***REMOVED***
+    fun setUid(uid: String) {
         this.uid = uid
-***REMOVED***
+    }
 
-    fun getFirstName(): String? ***REMOVED***
+    fun getFirstName(): String? {
         return nombres
-***REMOVED***
+    }
 
-    fun setFirstName(nombres: String) ***REMOVED***
+    fun setFirstName(nombres: String) {
         this.nombres = nombres
-***REMOVED***
+    }
 
-    fun getSurName(): String? ***REMOVED***
+    fun getSurName(): String? {
         return apellidos
-***REMOVED***
+    }
 
-    fun setSurName(apellidos: String) ***REMOVED***
+    fun setSurName(apellidos: String) {
         this.apellidos = apellidos
-***REMOVED***
+    }
 
-    fun getEmail(): String? ***REMOVED***
+    fun getEmail(): String? {
         return email
-***REMOVED***
+    }
 
-    fun setEmail(email: String) ***REMOVED***
+    fun setEmail(email: String) {
         this.email = email
-***REMOVED***
+    }
 
-    fun getPhone(): String? ***REMOVED***
+    fun getPhone(): String? {
         return telefono
-***REMOVED***
+    }
 
-    fun setPhone(telefono: String) ***REMOVED***
+    fun setPhone(telefono: String) {
         this.telefono = telefono
-***REMOVED***
+    }
 
 
-    override fun toString(): String ***REMOVED***
+    override fun toString(): String {
         return "$nombres" + "$apellidos"
 
-***REMOVED***
+    }
 
-***REMOVED***
+}

@@ -2,6 +2,7 @@ package com.example.h4_dbfirebase
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.text.BoringLayout
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.EditText
@@ -12,7 +13,7 @@ import com.google.firebase.FirebaseApp
 import com.google.firebase.database.*
 import java.util.UUID
 
-class MainActivity : AppCompatActivity() ***REMOVED***
+class MainActivity : AppCompatActivity(), OnUsuarioClickListener {
 
     var usuarioNombres: EditText? = null
     var usuarioApellidos: EditText? = null
@@ -25,16 +26,9 @@ class MainActivity : AppCompatActivity() ***REMOVED***
     var databaseReference: DatabaseReference? = null
 
     var firebaseDatabase : FirebaseDatabase? = null
-    var UsuarioSelected: String? = null
-     fun OnItemClick(usuario: Usuario) ***REMOVED***
-        UsuarioSelected = usuario.getUid()
-        usuarioNombres!!.setText(usuario.getFirstName())
-        usuarioApellidos!!.setText(usuario.getSurName())
-        usuarioEmail!!.setText(usuario.getEmail())
-        usuarioTelefono!!.setText(usuario.getPhone())
-***REMOVED***
 
-    override fun onCreate(savedInstanceState: Bundle?) ***REMOVED***
+    var UserIDSelected: String? = null
+    override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
@@ -46,114 +40,147 @@ class MainActivity : AppCompatActivity() ***REMOVED***
         rvUsuarios.layoutManager = LinearLayoutManager(this)
         initFirebase()
         listaUsuariosData()
-***REMOVED***
+    }
     //Creación del Menu
-    override fun onCreateOptionsMenu(menu: Menu?): Boolean ***REMOVED***
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(R.menu.main_menu, menu)
         return super.onCreateOptionsMenu(menu)
-***REMOVED***
+    }
 
-    private fun listaUsuariosData()***REMOVED***
-        databaseReference!!.child("Usuario").addValueEventListener(object: ValueEventListener***REMOVED***
-            override fun onDataChange(snapshot: DataSnapshot) ***REMOVED***
+    private fun listaUsuariosData(){
+        databaseReference!!.child("Usuario").addValueEventListener(object: ValueEventListener{
+            override fun onDataChange(snapshot: DataSnapshot) {
                 usuarios.clear()
-                for (data in snapshot.children)***REMOVED***
+                for (data in snapshot.children){
                     val usuario = data.getValue(Usuario::class.java)
-                    if(usuario != null)***REMOVED***
+                    if(usuario != null){
+                        usuario.setFirstName(usuario.getFirstName() + " " )
                         usuarios.add(usuario!!)
-            ***REMOVED***
-        ***REMOVED***
-                rvUsuarios!!.adapter = UserAdapter(this@MainActivity, usuarios)
-    ***REMOVED***
-            override fun onCancelled(error: DatabaseError) ***REMOVED***
-                Toast.makeText(applicationContext, "OnCancelled", Toast.LENGTH_SHORT).show()
-    ***REMOVED***
-***REMOVED***)
-***REMOVED***
-    private fun initFirebase()***REMOVED***
+                    }
+                }
+                rvUsuarios!!.adapter = UserAdapter(this@MainActivity, usuarios, this@MainActivity)
+
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                Toast.makeText(applicationContext, "OnCancelledFired", Toast.LENGTH_SHORT).show()
+            }
+
+        })
+    }
+    private fun initFirebase(){
         FirebaseApp.initializeApp(this);
         firebaseDatabase = FirebaseDatabase.getInstance();
         databaseReference = firebaseDatabase!!.reference
-***REMOVED***
+    }
     //Implementación del menu
-    override fun onOptionsItemSelected(item: MenuItem): Boolean ***REMOVED***
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
         val nombres = usuarioNombres!!.text.toString()
         val apellidos = usuarioApellidos!!.text.toString()
         val email = usuarioEmail!!.text.toString()
         val telefono = usuarioTelefono!!.text.toString()
 
-        when (item.itemId)***REMOVED***
-            R.id.icon_add -> ***REMOVED***
-                if (nombres.isNullOrEmpty()||apellidos.isNullOrEmpty() || email.isNullOrEmpty() || telefono.isNullOrEmpty() ) ***REMOVED***
+        when (item.itemId){
+            R.id.icon_add -> {
+                if (nombres.isNullOrEmpty()||apellidos.isNullOrEmpty() || (email.isNullOrEmpty() || !correoValido(email) || uniqueEmail(email.trim()) ) || telefono.isNullOrEmpty() ) {
                     validateData()
-        ***REMOVED*** else ***REMOVED***
+                } else {
                     val usuario = Usuario()
                     usuario.setUid(UUID.randomUUID().toString())
-                    usuario.setFirstName(nombres)
-                    usuario.setSurName(apellidos)
-                    usuario.setEmail(email)
-                    usuario.setPhone(telefono)
+                    usuario.setFirstName(nombres.trim())
+                    usuario.setSurName(apellidos.trim())
+                    usuario.setEmail(email.trim())
+                    usuario.setPhone(telefono.trim())
 
                     //grabar a Firebase linea a completar
                     var res = databaseReference!!.child("Usuario").child(usuario.getUid()!!).setValue(usuario)
                     println(res)
                     Toast.makeText(this, "Usuario Añadido", Toast.LENGTH_SHORT).show()
                     cleanData()
-        ***REMOVED***
-    ***REMOVED***
+                }
+            }
 
-            R.id.icon_edit -> ***REMOVED***
-                val usuarioEdited = Usuario()
-                usuarioEdited.setUid(UserSelected!!)
+            R.id.icon_edit -> {
+                if(UserIDSelected == null) {
+                    Toast.makeText(this, "Seleccione un usuario", Toast.LENGTH_SHORT).show()
+                }else {
+                    val usuarioEdited = Usuario()
+                    usuarioEdited.setUid(UserIDSelected!!)
+                    usuarioEdited.setFirstName(usuarioNombres!!.text.toString())
+                    usuarioEdited.setSurName(usuarioApellidos!!.text.toString())
+                    usuarioEdited.setEmail(usuarioEmail!!.text.toString())
+                    usuarioEdited.setPhone(usuarioTelefono!!.text.toString())
+                    //Grabar a firebase
+                    databaseReference!!.child("Usuario").child(usuarioEdited.getUid()!!)
+                        .setValue(usuarioEdited)
+                    //Ahora limpiamos
+                    cleanData()
+                    Toast.makeText(this, "Editar", Toast.LENGTH_SHORT).show()
+                }
+            }
 
-                usuarioEdited.setFirstName(usuarioNombres!!.text.toString())
-                usuarioEdited.setSurName(usuarioApellidos!!.text.toString())
-                usuarioEdited.setEmail(usuarioEmail!!.text.toString())
-                usuarioEdited.setPhone(usuarioTelefono!!.text.toString())
-                //Grabar a firebase
-                databaseReference!!.child("Usuario").child(usuarioEdited.getUid()!!).setValue(usuarioEdited)
-
-                Toast.makeText(this, "Editar", Toast.LENGTH_SHORT).show()
-    ***REMOVED***
-
-            R.id.icon_delete -> ***REMOVED***
-                //1259
-                var usuarioDelete = Usuario()
-                usuarioDelete.setUid(UserSelected!!)
-                databaseReference!!.child("Usuario").child(usuarioDelete.getUid()!!).removeValue()
-                cleanData()
-                Toast.makeText(this, "Eliminar", Toast.LENGTH_SHORT).show()
-    ***REMOVED***
-***REMOVED***
+            R.id.icon_delete -> {
+                if(UserIDSelected == null) {
+                    Toast.makeText(this, "Seleccione un usuario", Toast.LENGTH_SHORT).show()
+                }else {
+                    var usuarioDelete = Usuario()
+                    usuarioDelete.setUid(UserIDSelected!!)
+                    databaseReference!!.child("Usuario").child(usuarioDelete.getUid()!!)
+                        .removeValue()
+                    cleanData()
+                    Toast.makeText(this, "Eliminar", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
         return true
-***REMOVED***
+    }
     //Borrar campos
-    private fun cleanData() ***REMOVED***
+    private fun cleanData() {
         usuarioNombres!!.setText("")
         usuarioApellidos!!.setText("")
         usuarioEmail!!.setText("")
         usuarioTelefono!!.setText("")
-
+        UserIDSelected = null
         usuarioNombres!!.requestFocus()
-***REMOVED***
+    }
 
     //Validar datos
-    private fun validateData()***REMOVED***
+    private fun validateData(){
         val nombres = usuarioNombres!!.text.toString()
         val apellidos = usuarioApellidos!!.text.toString()
         val email = usuarioEmail!!.text.toString()
         val telefono = usuarioTelefono!!.text.toString()
 
-        if (nombres.isNullOrEmpty()) ***REMOVED***
+        if (nombres.isNullOrEmpty()) {
             usuarioNombres!!.error = "Obligatorio"
-***REMOVED***else if (apellidos.isNullOrEmpty()) ***REMOVED***
+        }else if (apellidos.isNullOrEmpty()) {
             usuarioApellidos!!.error = "Obligatorio"
-***REMOVED***else if (email.isNullOrEmpty()) ***REMOVED***
-            usuarioEmail!!.error = "Obligatorio"
-***REMOVED***else if (telefono.isNullOrEmpty()) ***REMOVED***
+        }else if (email.isNullOrEmpty() || !correoValido(email)) {
+            usuarioEmail!!.error = "El correo es obligatorio y debe ser válido"
+        }else if (telefono.isNullOrEmpty()) {
             usuarioTelefono!!.error = "Obligatorio"
-***REMOVED***
+        }
+        if(uniqueEmail(email)){
+            usuarioEmail!!.error = "El correo ya existe"
+        }
+    }
+    fun correoValido(email: String): Boolean{
+        return android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()
+    }
+    fun uniqueEmail(email: String): Boolean{
+        return usuarios.find { it.getEmail() == email } != null
+    }
 
-***REMOVED***
+    override fun OnItemClick(usuario: Usuario) {
+        UserIDSelected = usuario.getUid()
+        //print
+        println(UserIDSelected)
+        Toast.makeText(this, "Seleccionado: ${usuario.getFirstName()}", Toast.LENGTH_SHORT).show()
+        usuarioNombres!!.setText(usuario.getFirstName())
+        usuarioApellidos!!.setText(usuario.getSurName())
+        usuarioEmail!!.setText(usuario.getEmail())
+        usuarioTelefono!!.setText(usuario.getPhone())
+    }
 
-***REMOVED***
+
+}
