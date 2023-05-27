@@ -1,0 +1,16 @@
+pluginManagement ***REMOVED***
+    repositories ***REMOVED***
+        google()
+        mavenCentral()
+        gradlePluginPortal()
+***REMOVED***
+***REMOVED***
+dependencyResolutionManagement ***REMOVED***
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    repositories ***REMOVED***
+        google()
+        mavenCentral()
+***REMOVED***
+***REMOVED***
+rootProject.name = "H4-DB Fire Base"
+include ':app'
